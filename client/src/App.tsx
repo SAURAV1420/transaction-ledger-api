@@ -58,6 +58,7 @@ export function App() {
   // Alerts
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   // Load all accounts on mount
   useEffect(() => {
@@ -153,6 +154,7 @@ export function App() {
     setTxAmount('');
     setTxRefId(`ref_${Date.now().toString().slice(-6)}`);
     setTxDesc(type === 'credit' ? 'Deposit' : 'Withdrawal');
+    setModalError(null);
     setShowTransactionModal(true);
   };
 
@@ -162,12 +164,15 @@ export function App() {
 
     const amountNum = parseFloat(txAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      showToast('error', 'Amount must be greater than 0');
+      const msg = 'Amount must be greater than 0';
+      setModalError(msg);
+      showToast('error', msg);
       return;
     }
 
     try {
       setLoading(true);
+      setModalError(null);
       const result = await api.addTransaction(selectedAccount.id, {
         type: txModalType,
         amount: amountNum,
@@ -184,6 +189,7 @@ export function App() {
       await loadTransactions(selectedAccount.id, filterType, 1);
       setCurrentPage(1);
     } catch (err: any) {
+      setModalError(err.message);
       showToast('error', err.message);
     } finally {
       setLoading(false);
@@ -203,6 +209,7 @@ export function App() {
     setTrfAmount('');
     setTrfRefId(`trf_${Date.now().toString().slice(-6)}`);
     setTrfDesc('Internal Transfer');
+    setModalError(null);
     setShowTransferModal(true);
   };
 
@@ -210,16 +217,21 @@ export function App() {
     e.preventDefault();
     const amountNum = parseFloat(trfAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      showToast('error', 'Transfer amount must be greater than 0');
+      const msg = 'Transfer amount must be greater than 0';
+      setModalError(msg);
+      showToast('error', msg);
       return;
     }
     if (trfSourceId === trfDestId) {
-      showToast('error', 'Source and destination accounts must be different');
+      const msg = 'Source and destination accounts must be different';
+      setModalError(msg);
+      showToast('error', msg);
       return;
     }
 
     try {
       setLoading(true);
+      setModalError(null);
       const result = await api.transferMoney({
         source_account_id: trfSourceId,
         destination_account_id: trfDestId,
@@ -238,6 +250,7 @@ export function App() {
         await loadTransactions(selectedAccount.id, filterType, 1);
       }
     } catch (err: any) {
+      setModalError(err.message);
       showToast('error', err.message);
     } finally {
       setLoading(false);
@@ -253,24 +266,26 @@ export function App() {
   return (
     <div className="app-container">
       {/* Toast Notifications */}
-      {errorMessage && (
-        <div className="alert alert-danger" role="alert">
-          <AlertCircle size={18} />
-          <span>{errorMessage}</span>
-          <button className="btn-close" style={{ marginLeft: 'auto' }} onClick={() => setErrorMessage(null)}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-      {successMessage && (
-        <div className="alert alert-success" role="alert">
-          <Check size={18} />
-          <span>{successMessage}</span>
-          <button className="btn-close" style={{ marginLeft: 'auto' }} onClick={() => setSuccessMessage(null)}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
+      <div className="toast-container">
+        {errorMessage && (
+          <div className="alert alert-danger" role="alert">
+            <AlertCircle size={18} />
+            <span>{errorMessage}</span>
+            <button className="btn-close" style={{ marginLeft: 'auto' }} onClick={() => setErrorMessage(null)}>
+              <X size={16} />
+            </button>
+          </div>
+        )}
+        {successMessage && (
+          <div className="alert alert-success" role="alert">
+            <Check size={18} />
+            <span>{successMessage}</span>
+            <button className="btn-close" style={{ marginLeft: 'auto' }} onClick={() => setSuccessMessage(null)}>
+              <X size={16} />
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Header */}
       <header className="app-header">
@@ -606,6 +621,12 @@ export function App() {
             </div>
 
             <form onSubmit={handleSubmitTransaction}>
+              {modalError && (
+                <div className="alert alert-danger" style={{ marginBottom: 16 }}>
+                  <AlertCircle size={16} />
+                  <span>{modalError}</span>
+                </div>
+              )}
               <div className="form-group">
                 <label>Target Account</label>
                 <div className="form-input" style={{ opacity: 0.8, cursor: 'not-allowed' }}>
@@ -743,6 +764,12 @@ export function App() {
             </div>
 
             <form onSubmit={handleSubmitTransfer}>
+              {modalError && (
+                <div className="alert alert-danger" style={{ marginBottom: 16 }}>
+                  <AlertCircle size={16} />
+                  <span>{modalError}</span>
+                </div>
+              )}
               <div className="form-group">
                 <label>Source Account (Sender) *</label>
                 <select
