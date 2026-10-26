@@ -1,0 +1,29 @@
+{
+  "name": "full-stack-transaction-ledger",
+  "version": "1.0.0",
+  "description": "Production-grade Transaction Ledger API and Full Stack Dashboard",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "test": "npm --prefix server test",
+    "test:coverage": "npm --prefix server run test:coverage",
+    "server:dev": "npm --prefix server run dev",
+    "server:start": "npm --prefix server start",
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "start": "npm --prefix server start"
+  },
+  "keywords": [
+    "ledger",
+    "financial-ledger",
+    "transaction-system",
+    "sqlite",
+    "express",
+    "typescript",
+    "react",
+    "vite"
+  ],
+  "author": "",
+  "license": "ISC"
+}
